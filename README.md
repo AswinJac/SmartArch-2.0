@@ -53,6 +53,9 @@ This project was developed with contributions from:
 
 ![CLI Demo](static/images/demo.gif) 
 
+## 📊 Presentation Slides
+
+![CLI Demo](static/images/ppt.gif) 
 
 
 
