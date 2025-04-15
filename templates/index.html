@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SmartArch</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-image: url("{{ url_for('static', filename='images/background.jpg') }}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+      }
+
+      .container {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 40px 50px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        margin: 0 auto;
+      }
+
+      h1 {
+        color: #2c3e50;
+        margin: 0 0 30px 0;
+        font-size: 2rem;
+        text-align: center;
+        letter-spacing: 1.5px;
+      }
+
+      .form-group {
+        margin-bottom: 25px;
+        width: 100%;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 10px;
+        color: #34495e;
+        font-weight: 500;
+        text-align: left;
+        width: 100%;
+      }
+
+      input[type="file"],
+      select,
+      input[type="text"] {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+      }
+
+      input[type="file"] {
+        padding: 10px;
+        background: #f8f9fa;
+        cursor: pointer;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: #4caf50;
+        outline: none;
+        box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);
+      }
+
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 14px 0;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        letter-spacing: 0.5px;
+      }
+
+      button:hover {
+        background-color: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .form-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        flex-direction: column;
+      }
+
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #4caf50;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+
+      .loading-text {
+        color: white;
+        font-size: 1.2rem;
+        text-align: center;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading-steps {
+        color: #fff;
+        margin-top: 20px;
+        font-size: 0.9rem;
+        text-align: center;
+      }
+
+      .loading-step {
+        opacity: 0.7;
+        margin: 5px 0;
+      }
+
+      .loading-step.active {
+        opacity: 1;
+        color: #4caf50;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>SmartArch</h1>
+      <form method="POST" action="/analyze" enctype="multipart/form-data">
+        <div class="form-group">
+          <label>FLOOR PLAN IMAGE</label>
+          <input type="file" name="floor_plan" accept="image/*" required />
+        </div>
+
+        <div class="form-group">
+          <label>BUILDING MATERIAL</label>
+          <select name="material" required>
+            <option value="concrete">Concrete</option>
+
+            <option value="brick">Brick</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>LOCATION</label>
+          <input
+            type="text"
+            name="location"
+            placeholder="Enter city or address"
+            required
+          />
+        </div>
+
+        <button type="submit">ANALYZE NOW →</button>
+      </form>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Analyzing floor plan...</div>
+      <div class="loading-steps">
+        <div class="loading-step" id="step1">Analyzing floor plan layout</div>
+        <div class="loading-step" id="step2">Calculating room dimensions</div>
+        <div class="loading-step" id="step3">Processing climate data</div>
+        <div class="loading-step" id="step4">Generating recommendations</div>
+      </div>
+    </div>
+
+    <script>
+      document.querySelector("form").addEventListener("submit", function (e) {
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        const steps = ["step1", "step2", "step3", "step4"];
+        let currentStep = 0;
+
+        // Show loading overlay
+        loadingOverlay.style.display = "flex";
+
+        // Animate steps
+        function updateSteps() {
+          if (currentStep < steps.length) {
+            // Reset previous step
+            if (currentStep > 0) {
+              document
+                .getElementById(steps[currentStep - 1])
+                .classList.remove("active");
+            }
+            // Activate current step
+            document.getElementById(steps[currentStep]).classList.add("active");
+            currentStep++;
+            setTimeout(updateSteps, 2000); // Update every 2 seconds
+          }
+        }
+
+        // Start step animation
+        updateSteps();
+      });
+    </script>
+  </body>
+</html>
